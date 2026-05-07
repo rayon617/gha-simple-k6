@@ -1,0 +1,57 @@
+name: Blazemeter GHA test-simple JS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  reproduce-400-error:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      
+      - name: Debug - list files
+        run: |
+          echo "Workspace structure:"
+          pwd
+          echo "Files in repo:"
+          ls -R
+
+      - name: Check for incorrect imports
+        run: |
+          echo "Checking imports..."
+          grep -R "import" .github/workflows/*.js || true
+
+      
+      - name: Detect bad imports (missing ./)
+        run: |
+          echo "Checking for problematic imports..."
+          grep -R 'import .* from "' .github/workflows/*.js | grep -v '\./' || true
+
+
+
+      - name: Blazemeter GHA test
+        uses: Blazemeter/github-action@v8.5
+        with:
+          apiKey: ${{ secrets.BLAZEMETER_API_KEY }}
+          apiSecret: ${{ secrets.BLAZEMETER_API_SECRET }}
+          projectID: ${{ secrets.BLAZEMETER_PROJECT_ID }}
+          multiTests: "true"
+      
+          # ✅ CREATE NEW TEST
+          createTest: "true"
+          testName: "Blaze GHA test"
+      
+          # ✅ Upload ALL files
+          inputAllFiles: .github/workflows/
+          inputStartFile: ".github/workflows/taurus-load.yml"
+          uploadFileCheck: "true"
+      
+          continuePipeline: "false"
+          showTailLog: "true"
+      
+        env:
+          BASE_URL: https://jsonplaceholder.typicode.com
+          DP_TOKEN_URL: https://dummy-token-api.com/oauth/token
