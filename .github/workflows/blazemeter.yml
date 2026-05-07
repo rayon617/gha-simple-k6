@@ -37,12 +37,12 @@ jobs:
         with:
           apiKey: ${{ secrets.BLAZEMETER_API_KEY }}
           apiSecret: ${{ secrets.BLAZEMETER_API_SECRET }}
-          projectID: ${{ secrets.BLAZEMETER_PROJECT_ID }}
+          projectID: 2345452
           multiTests: "true"
       
           # ✅ CREATE NEW TEST
           createTest: "true"
-          testName: "Blaze GHA test"
+          testName: "Blaze GHA test-simple JS"
       
           # ✅ Upload ALL files
           inputAllFiles: .github/workflows/
