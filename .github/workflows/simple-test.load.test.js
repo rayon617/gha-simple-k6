@@ -1,18 +1,46 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-export const options = {
-  vus: 5,
-  duration: '60s',
-};
+const BASE_URL = __ENV.BASE_URL;
+const DP_TOKEN_URL = __ENV.DP_TOKEN_URL;
+
+function getToken() {
+    if (!DP_TOKEN_URL) {
+        throw new Error('DP_TOKEN_URL not set');
+    }
+
+    const payload = JSON.stringify({
+        NetbankId: 'TESTUSER001'
+    });
+
+    const res = http.post(DP_TOKEN_URL, payload, {
+        headers: { 'Content-Type': 'application/json' }
+    });
+
+    check(res, {
+        'token api success': (r) => r.status === 200
+    });
+
+    try {
+        return JSON.parse(res.body).DpTok;
+    } catch (e) {
+        return null;
+    }
+}
 
 export default function () {
-  const response = http.get(__ENV.BASE_URL + '/posts/1');
-  
-  check(response, {
-    'status is 200': (r) => r.status === 200,
-    'response time < 1000ms': (r) => r.timings.duration < 1000,
-  });
-  
-  sleep(1);
+
+    const token = getToken();
+
+    const res = http.get(`${BASE_URL}/property/favourites`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    check(res, {
+        'status is 200': (r) => r.status === 200,
+    });
+
+    sleep(1);
 }
