@@ -1,0 +1,26 @@
+---
+# Taurus Configuration - Simplified for Blazemeter Testing
+# Run with: bzt taurus-load.yml
+
+execution:
+  - concurrency: 5
+    hold-for: 60s
+    scenario: simple-test
+
+scenarios:
+  simple-test:
+    executor: k6
+    script: simple-test.load.test.js
+
+settings:
+  default-executor: k6
+  artifacts-dir: test-results/%Y-%m-%d_%H-%M-%S
+  working-dir: .
+  env:
+    BASE_URL: https://jsonplaceholder.typicode.com
+
+criteria:
+  - avg-rt>1000ms for 30s, stop as failed
+  - fail>5% for 30s, stop as failed
+  - p95>2000ms for 1m, stop as failed
+  - p99>5000ms for 1m, stop as failed
